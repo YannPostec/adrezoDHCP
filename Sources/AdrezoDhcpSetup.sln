@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "AdrezoDhcpSetup", "AdrezoDhcpSetup\AdrezoDhcpSetup.vdproj", "{2F7E91DF-ADEF-4CF6-8A91-CE9478D43DA9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Default = Debug|Default
+		Release|Default = Release|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2F7E91DF-ADEF-4CF6-8A91-CE9478D43DA9}.Debug|Default.ActiveCfg = Debug
+		{2F7E91DF-ADEF-4CF6-8A91-CE9478D43DA9}.Debug|Default.Build.0 = Debug
+		{2F7E91DF-ADEF-4CF6-8A91-CE9478D43DA9}.Release|Default.ActiveCfg = Release
+		{2F7E91DF-ADEF-4CF6-8A91-CE9478D43DA9}.Release|Default.Build.0 = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FD15698B-8EF5-44F1-B8C0-8CA11446C0C4}
+	EndGlobalSection
+EndGlobal
