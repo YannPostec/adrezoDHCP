@@ -1,16 +1,16 @@
 # AdrezoDHCP : Windows DHCP Server API Service
 
 Designed for use with Adrezo web application.  
-Installed on Windows Server, it provide api endpoints used by Adrezo to inject DHCP IP Addresses into the database.
+Installed on Windows Server as a service, it provides api endpoints used by Adrezo to inject DHCP IP Addresses into the database.
 
 ## Environment
 
-The application is under development and tested only on :
+The application is under development and partially tested only on :
 - Windows Server 2016
 
 ## Installation
 
-Use the MSI provided to install the service.
+Use the MSI provided to install the service.  
 The service AdrezoDHCP will be in automatic mode and launched after install.
 
 ## Configuration
@@ -41,6 +41,7 @@ The parameters are :
 - web_user : String. Username for basic authentication
 - web_pwd : String. Password for basic authentication
 - web_ssl : Boolean. Listening server on HTTP (false) or HTTPS (true)
+- dhcp_host : String. DHCP Server hostname, usually localhost
 
 ### SSL
 No certificate is provided with the application.  
@@ -90,3 +91,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ````
+
+## Libraries
+
+- DHCP Server API 0.3 by garysharp under MIT license, [Github repository](https://github.com/garysharp/DhcpServerApi)
+- Json.NET by Newtonsoft under MIT license, [Webpage](https://www.newtonsoft.com/json)
