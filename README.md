@@ -5,8 +5,12 @@ Installed on Windows Server as a service, it provides api endpoints used by Adre
 
 ## Environment
 
-The application is under development and partially tested only on :
+The application has been tested on :
+- Windows Server 2008 R2
+- Windows Server 2012 R2
 - Windows Server 2016
+
+The application needs .NET Framework 4.5 minimum.
 
 ## Installation
 
@@ -29,13 +33,13 @@ In application directory, you will find an XML configuration file `AdrezoDHCP.ex
     <add key="dhcp_host" value="localhost" />
   </appSettings>
   <startup>
-    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.6.1" />
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5" />
   </startup>
 </configuration>
 ````
 
 The parameters are :
-- web_host : String. Listening service hostname or IP address
+- web_host : String. Listening service hostname or IP address, localhost is fine
 - web_port : Integer. Listening port, default to 6660
 - web_auth : Boolean. Listening server requires Basic Authentication
 - web_user : String. Username for basic authentication
@@ -47,10 +51,12 @@ The parameters are :
 No certificate is provided with the application.  
 You must generate and install a certificate in computer store.  
 
-Retrieve the certificate hash in Windows MMC Certificates, thumbprint property of your certificate.  
+Retrieve the certificate thumbprint property in Windows MMC with Certificates Snap-in.
 
 And bind it to the listening port of the application :  
 `netsh http add sslcert ipport=*:<application port> certhash=<thumbprint> appid={<application guid>}`
+
+application guid is an id like 00112233-4455-6677-8899-AABBCCDDEEFF
 
 ## Usage
 
@@ -70,7 +76,7 @@ List of endpoints :
 _IP values are represented as usual, example : 192.168.0.1_  
 _MAC Value are represented by 12 hexadecimal characters without separation, example : 1a2b3c4d5e6f_  
 _Date value are in format "yyyy-MM-dd HH:mm:ss", example 2018-07-15 09:17:32_  
-_Name represents only the host part of hostname and are truncated to 20 characters_  
+_Name represents only the host part of hostname and are truncated to 20 characters, if name is empty on dhcp server, take value EMPTYNAME_  
 
 ## License
 

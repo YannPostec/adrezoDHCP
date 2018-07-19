@@ -30,7 +30,6 @@ namespace AdrezoDHCP
                 var userName = usernamePasswordArray[0];
                 var password = usernamePasswordArray[1];
 
-                // Replace this with your own system of security / means of validating credentials
                 var isValid = userName == myuser && password == mypwd;
 
                 if (isValid)

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.ServiceProcess;
 using System.Web.Http;
 using System.Web.Http.SelfHost;
+using System.Linq;
 using System.Configuration;
 
 namespace AdrezoDHCP
@@ -44,6 +45,11 @@ namespace AdrezoDHCP
                 routeTemplate: "{controller}/{action}/{scope}",
                 defaults: new { scope = RouteParameter.Optional }
                );
+
+            //JSON by default, remove XML
+            var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault(t => t.MediaType == "application/xml");
+            config.Formatters.XmlFormatter.SupportedMediaTypes.Remove(appXmlType);
+
             if (myauth)
             {
                 config.Filters.Add(new BasicAuthenticationAttribute());

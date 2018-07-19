@@ -7,6 +7,8 @@ using System.Web.Http;
 using Dhcp;
 using Newtonsoft.Json;
 using System.Configuration;
+using System.Text;
+using System.Diagnostics;
 
 
 namespace AdrezoDHCP
@@ -63,7 +65,7 @@ namespace AdrezoDHCP
         private string dhcp_host = ConfigurationManager.AppSettings["dhcp_host"];
 
         [HttpGet]
-        public String scopelist()
+        public HttpResponseMessage scopelist()
         {
             // Connect to DHCP Server
             var dhcpServer = DhcpServer.Connect(dhcp_host);
@@ -71,14 +73,24 @@ namespace AdrezoDHCP
             // Retrieving scopes list and add each one to response
             foreach (var scope in dhcpServer.Scopes)
             {
-                mylist.scopes.Add(new Scope(scope.Address.ToString()));
+                if (scope.State == DhcpServerScopeState.Enabled || scope.State == DhcpServerScopeState.EnabledSwitched)
+                {
+                    mylist.scopes.Add(new Scope(scope.Address.ToString()));
+                }
             }
             // Returning Json string from mylist omiting null values
-            return JsonConvert.SerializeObject(mylist, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+            return new HttpResponseMessage()
+            {
+                Content = new StringContent(
+                    JsonConvert.SerializeObject(mylist, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }),
+                    Encoding.UTF8,
+                    "application/json"
+                )
+            };
         }
 
         [HttpGet]
-        public String range(String scope)
+        public HttpResponseMessage range(String scope)
         {
             // Connect to DHCP Server
             var dhcpServer = DhcpServer.Connect(dhcp_host);
@@ -102,8 +114,17 @@ namespace AdrezoDHCP
                 // Creating range from previous start and end
                 ScopeRange myrange = new ScopeRange(mys,mye);
                 // Returning Json string from myrange omiting null values
-                return JsonConvert.SerializeObject(myrange, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-            } else
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(myrange, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }),
+                        Encoding.UTF8,
+                        "application/json"
+                    )
+                };
+
+            }
+            else
             {
                 // Scope given in parameter was not found
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound,"Scope not found"));
@@ -111,7 +132,7 @@ namespace AdrezoDHCP
         }
 
         [HttpGet]
-        public String exclude(String scope)
+        public HttpResponseMessage exclude(String scope)
         {
             // Connect to DHCP Server
             var dhcpServer = DhcpServer.Connect(dhcp_host);
@@ -136,8 +157,17 @@ namespace AdrezoDHCP
             if (bFound)
             {
                 // Returning Json string from mylist omiting null values
-                return JsonConvert.SerializeObject(mylist, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-            } else
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(mylist, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }),
+                        Encoding.UTF8,
+                        "application/json"
+                    )
+                };
+
+            }
+            else
             {
                 // Scope given in parameter was not found
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Scope not found"));
@@ -145,7 +175,7 @@ namespace AdrezoDHCP
         }
 
         [HttpGet]
-        public String reserve(String scope)
+        public HttpResponseMessage reserve(String scope)
         {
             // Connect to DHCP Server
             var dhcpServer = DhcpServer.Connect(dhcp_host);
@@ -161,15 +191,25 @@ namespace AdrezoDHCP
                     // Browsing through reservations for this scope
                     foreach (var myresa in searchscope.Reservations)
                     {
-                        // Retrieving client name and keeping only the host part
-                        String myname = myresa.Client.Name;
+                        // Retrieving client name
+                        String myname = "";
+                        if (myresa.Client.Name == null)
+                        {
+                            // If no name, send something anyway
+                            myname = "EMPTYNAME";
+                        }
+                        else
+                        {
+                            myname = myresa.Client.Name;
+                        }
+                        // Keeping only the host part
                         int firstpoint = myname.IndexOf('.');
                         if (firstpoint > 0)
                         {
                             myname = myname.Substring(0, firstpoint);
                         }
                         // Limit client name to 20 chars
-                        if (myname.Length > 20) 
+                        if (myname.Length > 20)
                         {
                             myname = myname.Substring(0, 20);
                         }
@@ -183,7 +223,15 @@ namespace AdrezoDHCP
             if (bFound)
             {
                 // Returning Json string from mylist omiting null values
-                return JsonConvert.SerializeObject(mylist, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(mylist, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }),
+                        Encoding.UTF8,
+                        "application/json"
+                    )
+                };
+
             }
             else
             {
@@ -193,7 +241,7 @@ namespace AdrezoDHCP
         }
 
         [HttpGet]
-        public String lease(String scope)
+        public HttpResponseMessage lease(String scope)
         {
             // Connect to DHCP Server
             var dhcpServer = DhcpServer.Connect(dhcp_host);
@@ -206,16 +254,29 @@ namespace AdrezoDHCP
                 {
                     // Found the scope given in parameter
                     bFound = true;
+                    // MS DHCP return AddressState as full byte (state, Name protection and DNS informations)
+                    // We just want the first 2 bits : state so logical and with 3 (0000011)
+                    byte allactive = 3;
                     // Get active DHCP client leases
                     var activeClients = searchscope.Clients
-                        .Where(c => c.AddressState == DhcpServerClientAddressStates.Active)
+                        .Where(c => (Convert.ToByte(c.AddressState) & allactive) == 1)
                         .Where(c => c.Type == DhcpServerClientTypes.DHCP);
-
+ 
                     // Browsing through leases
                     foreach (var client in activeClients)
                     {
-                        // Retrieving client name and keeping only the host part
-                        String myname = client.Name;
+                        // Retrieving client name
+                        String myname = "";
+                        if (client.Name == null)
+                        {
+                            // If no name, send something anyway
+                            myname = "EMPTYNAME";
+                        }
+                        else
+                        {
+                            myname = client.Name;
+                        }
+                        // Keeping only the host part
                         int firstpoint = myname.IndexOf('.');
                         if (firstpoint > 0)
                         {
@@ -230,7 +291,7 @@ namespace AdrezoDHCP
                         String myhw = client.HardwareAddress.ToString();
                         myhw = myhw.Replace(":", "");
                         // Add this lease with all attributes ip/mac/expiration date/name
-                        mylist.leases.Add(new Lease(client.IpAddress.ToString(), client.HardwareAddress.ToString(), client.LeaseExpires.ToString("yyyy-MM-dd HH:mm:ss"), myname));
+                        mylist.leases.Add(new Lease(client.IpAddress.ToString(), myhw, client.LeaseExpires.ToString("yyyy-MM-dd HH:mm:ss"), myname));
                     }
                 }
             }
@@ -238,7 +299,15 @@ namespace AdrezoDHCP
             if (bFound)
             {
                 // Returning Json string from mylist omiting null values
-                return JsonConvert.SerializeObject(mylist, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(mylist, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }),
+                        Encoding.UTF8,
+                        "application/json"
+                    )
+                };
+
             }
             else
             {
