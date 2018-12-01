@@ -63,6 +63,7 @@ namespace AdrezoDHCP
     public class dhcpController : ApiController
     {
         private string dhcp_host = ConfigurationManager.AppSettings["dhcp_host"];
+        private bool adrezo_format = Convert.ToBoolean(ConfigurationManager.AppSettings["adrezo_format"]);
 
         [HttpGet]
         public HttpResponseMessage scopelist()
@@ -202,20 +203,35 @@ namespace AdrezoDHCP
                         {
                             myname = myresa.Client.Name;
                         }
-                        // Keeping only the host part
-                        int firstpoint = myname.IndexOf('.');
-                        if (firstpoint > 0)
+                        // Retrieving client hardware address
+                        String myhw = myresa.HardwareAddress.ToString();
+
+                        // Applying Adrezo formatting
+                        if (adrezo_format)
                         {
-                            myname = myname.Substring(0, firstpoint);
+                            // Keeping only the host part in name
+                            int firstpoint = myname.IndexOf('.');
+                            if (firstpoint > 0)
+                            {
+                                myname = myname.Substring(0, firstpoint);
+                            }
+                            // Limit client name to 20 chars
+                            if (myname.Length > 20)
+                            {
+                                myname = myname.Substring(0, 20);
+                            }
+                            // Removing : from mac address string
+                            myhw = myhw.Replace(":", "");
+                            // Limit mac to 12 chars
+                            if (myhw.Length > 12)
+                            {
+                                myhw = myhw.Substring(0, 12);
+                            }
                         }
-                        // Limit client name to 20 chars
-                        if (myname.Length > 20)
-                        {
-                            myname = myname.Substring(0, 20);
-                        }
-                        // Reserve Mac Address doesn't have : to be removed
+
+                        // Reserve Mac Address doesn't have to be removed
                         // Add this reservation with no expiration date (null), just ip/mac/name
-                        mylist.leases.Add(new Lease(myresa.IpAddress.ToString(), myresa.HardwareAddress.ToString(), null, myname));
+                        mylist.leases.Add(new Lease(myresa.IpAddress.ToString(), myhw, null, myname));
                     }
                 }
             }
@@ -276,20 +292,32 @@ namespace AdrezoDHCP
                         {
                             myname = client.Name;
                         }
-                        // Keeping only the host part
-                        int firstpoint = myname.IndexOf('.');
-                        if (firstpoint > 0)
-                        {
-                            myname = myname.Substring(0, firstpoint);
-                        }
-                        // Limit client name to 20 chars
-                        if (myname.Length > 20)
-                        {
-                            myname = myname.Substring(0, 20);
-                        }
-                        // Removing : from mac address string
+                        // Retrieving client hardware address
                         String myhw = client.HardwareAddress.ToString();
-                        myhw = myhw.Replace(":", "");
+
+                        // Applying Adrezo formatting
+                        if (adrezo_format)
+                        {
+                            // Keeping only the host part in name
+                            int firstpoint = myname.IndexOf('.');
+                            if (firstpoint > 0)
+                            {
+                                myname = myname.Substring(0, firstpoint);
+                            }
+                            // Limit client name to 20 chars
+                            if (myname.Length > 20)
+                            {
+                                myname = myname.Substring(0, 20);
+                            }
+                            // Removing : from mac address string
+                            myhw = myhw.Replace(":", "");
+                            //Limit mac to 12 chars
+                            if (myhw.Length > 12)
+                            {
+                                myhw = myhw.Substring(0, 12);
+                            }
+                        }
+                        
                         // Add this lease with all attributes ip/mac/expiration date/name
                         mylist.leases.Add(new Lease(client.IpAddress.ToString(), myhw, client.LeaseExpires.ToString("yyyy-MM-dd HH:mm:ss"), myname));
                     }

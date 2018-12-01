@@ -17,6 +17,11 @@ The application needs .NET Framework 4.5 minimum.
 Use the MSI provided to install the service.  
 The service AdrezoDHCP will be in automatic mode and launched after install.
 
+## Upgrade
+
+You must uninstall the previous version first to upgrade.  
+The configuration file will be back to default.
+
 ## Configuration
 In application directory, you will find an XML configuration file `AdrezoDHCP.exe.config`  
 
@@ -31,6 +36,7 @@ In application directory, you will find an XML configuration file `AdrezoDHCP.ex
     <add key="web_pwd" value="changeme" />
     <add key="web_ssl" value="false" />
     <add key="dhcp_host" value="localhost" />
+    <add key="adrezo_format" value="true" />
   </appSettings>
   <startup>
     <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5" />
@@ -46,6 +52,7 @@ The parameters are :
 - web_pwd : String. Password for basic authentication
 - web_ssl : Boolean. Listening server on HTTP (false) or HTTPS (true)
 - dhcp_host : String. DHCP Server hostname, usually localhost
+- adrezo_format : Boolean. Modify name and hardware adress to follow adrezo formats
 
 ### SSL
 No certificate is provided with the application.  
@@ -74,9 +81,11 @@ List of endpoints :
 `{ "leases" : [ {"ip" : "<lease ip>", "mac" : "<lease mac>", "stamp" : "<Lease expiry date>", "name" : "<lease name>" } , ... ] }`
 
 _IP values are represented as usual, example : 192.168.0.1_  
-_MAC Value are represented by 12 hexadecimal characters without separation, example : 1a2b3c4d5e6f_  
 _Date value are in format "yyyy-MM-dd HH:mm:ss", example 2018-07-15 09:17:32_  
-_Name represents only the host part of hostname and are truncated to 20 characters, if name is empty on dhcp server, take value EMPTYNAME_  
+_MAC values are represented by 12 hexadecimal characters without separation, example : 1a2b3c4d5e6f_  
+_(adrezo format parameter to true will remove : character and truncate hardware address to 12 characters)_  
+_Name values, if empty on dhcp server, take value EMPTYNAME_  
+_(adrezo format parameter to true will take only the host part of hostname and truncate it to 20 characters)_
 
 ## License
 
