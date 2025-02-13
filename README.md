@@ -58,12 +58,21 @@ The parameters are :
 No certificate is provided with the application.  
 You must generate and install a certificate in computer store.  
 
-Retrieve the certificate thumbprint property in Windows MMC with Certificates Snap-in.
+If your certificate have a private key, consider creating a pfx file :  
+`openssl pkcs12 -export -out cert.pfx -inkey cert.key -in cert.cer`
+
+To install certificate on windows :  
+- Launch mmc
+- in File | Add/Remove Snap-in, choose Certificates, Computer Account, Local computer and validate
+- In mmc expand Certificate snap-in and Right click on Personal, All Tasks | Import
+- Choose your pfx file
+- After the certificate is imported, open it and go to details
+- Retrieve the certificate thumbprint property
 
 And bind it to the listening port of the application :  
-`netsh http add sslcert ipport=*:<application port> certhash=<thumbprint> appid={<application guid>}`
+`netsh http add sslcert ipport=0.0.0.0:6660 certhash=<thumbprint> appid={81321A88-C82A-4470-A772-2D4BD848EFE2}`
 
-application guid is an id like 00112233-4455-6677-8899-AABBCCDDEEFF
+Finally, restart "Adrezo DHCP API" service
 
 ## Usage
 
